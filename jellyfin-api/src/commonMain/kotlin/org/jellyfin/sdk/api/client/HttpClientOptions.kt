@@ -1,7 +1,11 @@
 package org.jellyfin.sdk.api.client
 
+import java.security.PrivateKey
+import java.security.cert.X509Certificate
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
+
+
 
 /**
  * Options to use when making HTTP requests.
@@ -30,4 +34,7 @@ public data class HttpClientOptions(
 	 * Defaults to 30 seconds.
 	 */
 	val socketTimeout: Duration = 30.seconds,
+
+	val clientCertChain: Array<X509Certificate>? = null,
+	val clientKey: PrivateKey? = null
 )

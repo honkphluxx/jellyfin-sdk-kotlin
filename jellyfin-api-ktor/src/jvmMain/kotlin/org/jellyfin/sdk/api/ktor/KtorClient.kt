@@ -2,6 +2,7 @@ package org.jellyfin.sdk.api.ktor
 
 import io.ktor.client.HttpClient
 import io.ktor.client.call.NoTransformationFoundException
+import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.features.HttpRequestTimeoutException
 import io.ktor.client.features.HttpTimeout
 import io.ktor.client.request.header
@@ -40,11 +41,22 @@ import org.jellyfin.sdk.model.UUID
 import java.io.IOException
 import java.net.ConnectException
 import java.net.UnknownHostException
+import java.security.KeyStore
+import java.security.PrivateKey
+import java.security.cert.CertificateException
+import java.security.cert.X509Certificate
+import java.util.Arrays
+import javax.net.ssl.KeyManagerFactory
+import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLException
 import javax.net.ssl.SSLHandshakeException
 import javax.net.ssl.SSLKeyException
 import javax.net.ssl.SSLPeerUnverifiedException
 import javax.net.ssl.SSLProtocolException
+import javax.net.ssl.SSLSocketFactory
+import javax.net.ssl.TrustManager
+import javax.net.ssl.TrustManagerFactory
+import javax.net.ssl.X509TrustManager
 import io.ktor.http.HttpMethod as KtorHttpMethod
 
 @Suppress("LongParameterList")
@@ -57,7 +69,7 @@ public actual open class KtorClient actual constructor(
 	override val httpClientOptions: HttpClientOptions,
 	private val socketConnectionFactory: SocketConnectionFactory,
 ) : ApiClient() {
-	private val client: HttpClient = HttpClient {
+	private val client: HttpClient = if (httpClientOptions.clientKey == null)  HttpClient() {
 		followRedirects = httpClientOptions.followRedirects
 		expectSuccess = false
 
@@ -65,6 +77,43 @@ public actual open class KtorClient actual constructor(
 			connectTimeoutMillis = httpClientOptions.connectTimeout.inWholeMilliseconds
 			requestTimeoutMillis = httpClientOptions.requestTimeout.inWholeMilliseconds
 			socketTimeoutMillis = httpClientOptions.socketTimeout.inWholeMilliseconds
+		}
+	} else HttpClient(OkHttp) {
+		followRedirects = httpClientOptions.followRedirects
+		expectSuccess = false
+
+		install(HttpTimeout) {
+			connectTimeoutMillis = httpClientOptions.connectTimeout.inWholeMilliseconds
+			requestTimeoutMillis = httpClientOptions.requestTimeout.inWholeMilliseconds
+			socketTimeoutMillis = httpClientOptions.socketTimeout.inWholeMilliseconds
+		}
+
+		engine {
+			config {
+				val keychain: Array<X509Certificate>? = httpClientOptions.clientCertChain
+				val privateKey: PrivateKey? = httpClientOptions.clientKey
+
+				val keyStore: KeyStore = KeyStore.getInstance("PKCS12")
+				keyStore.load(null, null)
+				if (keychain != null && privateKey != null) {
+					keyStore.setKeyEntry("my-key-alias", privateKey, null, keychain)
+				}
+				val trustManagerFactory =
+					TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
+				trustManagerFactory.init(keyStore)
+				val trustManagers = trustManagerFactory.trustManagers
+				check(!(trustManagers.size != 1 || trustManagers[0] !is X509TrustManager)) {
+					("Unexpected default trust managers:"
+							+ Arrays.toString(trustManagers))
+				}
+
+				val keyManagerFactory = KeyManagerFactory.getInstance("X509")
+				keyManagerFactory.init(keyStore, null)
+				val sslContext = SSLContext.getInstance("TLS")
+				sslContext.init(keyManagerFactory.keyManagers, null, null)
+
+				sslSocketFactory(sslContext.socketFactory, trustManagers[0] as X509TrustManager)
+			}
 		}
 	}
 
