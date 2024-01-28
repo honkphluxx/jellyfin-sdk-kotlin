@@ -3,6 +3,8 @@ package org.jellyfin.sdk.discovery
 import kotlinx.coroutines.flow.Flow
 import org.jellyfin.sdk.Jellyfin
 import org.jellyfin.sdk.model.api.ServerDiscoveryInfo
+import java.security.PrivateKey
+import java.security.cert.X509Certificate
 
 /**
  * Service for discovery related functionality.
@@ -45,9 +47,13 @@ public class DiscoveryService(
 	public suspend fun getRecommendedServers(
 		servers: Collection<String>,
 		minimumScore: RecommendedServerInfoScore = RecommendedServerInfoScore.BAD,
+		clientKey: PrivateKey? = null,
+		clientCert: Array<X509Certificate>? = null
 	): Collection<RecommendedServerInfo> = recommendedServerDiscovery.discover(
 		servers = servers,
-		minimumScore = minimumScore
+		minimumScore = minimumScore,
+		clientKey,
+		clientCert
 	)
 
 	/**
@@ -56,9 +62,13 @@ public class DiscoveryService(
 	public suspend fun getRecommendedServers(
 		input: String,
 		minimumScore: RecommendedServerInfoScore = RecommendedServerInfoScore.BAD,
+		clientKey: PrivateKey? = null,
+		clientCert: Array<X509Certificate>? = null
 	): Collection<RecommendedServerInfo> = getRecommendedServers(
 		servers = getAddressCandidates(input),
-		minimumScore = minimumScore
+		minimumScore = minimumScore,
+		clientKey,
+		clientCert
 	)
 
 	/**
