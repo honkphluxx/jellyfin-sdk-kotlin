@@ -9,12 +9,16 @@ import org.jellyfin.sdk.api.sockets.SocketInstance
 import org.jellyfin.sdk.model.ClientInfo
 import org.jellyfin.sdk.model.DeviceInfo
 import org.jellyfin.sdk.model.UUID
+import java.security.PrivateKey
+import java.security.cert.X509Certificate
 
 @Suppress("LongParameterList")
 public expect open class KtorClient(
 	baseUrl: String? = null,
 	accessToken: String? = null,
 	userId: UUID? = null,
+	clientKey: PrivateKey? = null,
+	clientCertChain: Array<X509Certificate>? = null,
 	clientInfo: ClientInfo,
 	deviceInfo: DeviceInfo,
 	httpClientOptions: HttpClientOptions,

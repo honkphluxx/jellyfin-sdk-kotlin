@@ -8,6 +8,8 @@ import org.jellyfin.sdk.model.ClientInfo
 import org.jellyfin.sdk.model.DeviceInfo
 import org.jellyfin.sdk.model.ServerVersion
 import org.jellyfin.sdk.model.UUID
+import java.security.PrivateKey
+import java.security.cert.X509Certificate
 
 public class Jellyfin(
 	public val options: JellyfinOptions,
@@ -44,6 +46,8 @@ public class Jellyfin(
 		baseUrl: String? = null,
 		accessToken: String? = null,
 		userId: UUID? = null,
+		clientKey: PrivateKey? = null,
+		clientCertChain: Array<X509Certificate>? = null,
 		clientInfo: ClientInfo? = options.clientInfo,
 		deviceInfo: DeviceInfo? = options.deviceInfo,
 		httpClientOptions: HttpClientOptions = HttpClientOptions(),
@@ -59,6 +63,8 @@ public class Jellyfin(
 			baseUrl = baseUrl,
 			accessToken = accessToken,
 			userId = userId,
+			clientKey = clientKey,
+			clientCertChain = clientCertChain,
 			clientInfo = clientInfo,
 			deviceInfo = deviceInfo,
 			httpClientOptions = httpClientOptions,

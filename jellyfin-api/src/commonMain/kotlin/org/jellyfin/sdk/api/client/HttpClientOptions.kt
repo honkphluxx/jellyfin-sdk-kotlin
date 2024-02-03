@@ -34,7 +34,4 @@ public data class HttpClientOptions(
 	 * Defaults to 30 seconds.
 	 */
 	val socketTimeout: Duration = 30.seconds,
-
-	val clientCertChain: Array<X509Certificate>? = null,
-	val clientKey: PrivateKey? = null
 )

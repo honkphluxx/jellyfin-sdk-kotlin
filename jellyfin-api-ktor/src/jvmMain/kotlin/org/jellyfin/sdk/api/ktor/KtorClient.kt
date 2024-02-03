@@ -61,15 +61,17 @@ import io.ktor.http.HttpMethod as KtorHttpMethod
 
 @Suppress("LongParameterList")
 public actual open class KtorClient actual constructor(
-	override var baseUrl: String?,
-	override var accessToken: String?,
-	override var userId: UUID?,
-	override var clientInfo: ClientInfo,
-	override var deviceInfo: DeviceInfo,
-	override val httpClientOptions: HttpClientOptions,
-	private val socketConnectionFactory: SocketConnectionFactory,
+       override var baseUrl: String?,
+       override var accessToken: String?,
+       override var userId: UUID?,
+       override var clientKey: PrivateKey?,
+       override var clientCertChain: Array<X509Certificate>?,
+       override var clientInfo: ClientInfo,
+       override var deviceInfo: DeviceInfo,
+       override val httpClientOptions: HttpClientOptions,
+       private val socketConnectionFactory: SocketConnectionFactory,
 ) : ApiClient() {
-	private val client: HttpClient = if (httpClientOptions.clientKey == null)  HttpClient() {
+	private val client: HttpClient = if (clientKey == null)  HttpClient() {
 		followRedirects = httpClientOptions.followRedirects
 		expectSuccess = false
 
@@ -90,13 +92,10 @@ public actual open class KtorClient actual constructor(
 
 		engine {
 			config {
-				val keychain: Array<X509Certificate>? = httpClientOptions.clientCertChain
-				val privateKey: PrivateKey? = httpClientOptions.clientKey
-
 				val keyStore: KeyStore = KeyStore.getInstance("PKCS12")
 				keyStore.load(null, null)
-				if (keychain != null && privateKey != null) {
-					keyStore.setKeyEntry("my-key-alias", privateKey, null, keychain)
+				if (clientCertChain != null && clientKey != null) {
+					keyStore.setKeyEntry("my-key-alias", clientKey, null, clientCertChain)
 				}
 				val trustManagerFactory =
 					TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())

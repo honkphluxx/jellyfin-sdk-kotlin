@@ -120,13 +120,13 @@ public class RecommendedServerDiscovery constructor(
 
 		val client = jellyfin.createApi(
 			baseUrl = address,
+			clientKey = clientKey,
+			clientCertChain = clientCert,
 			httpClientOptions = HttpClientOptions(
 				followRedirects = false,
 				connectTimeout = HTTP_TIMEOUT,
 				requestTimeout = HTTP_TIMEOUT,
-				socketTimeout = HTTP_TIMEOUT,
-				clientKey = clientKey,
-				clientCertChain = clientCert
+				socketTimeout = HTTP_TIMEOUT
 			),
 		)
 

@@ -7,6 +7,8 @@ import org.jellyfin.sdk.api.sockets.SocketInstance
 import org.jellyfin.sdk.model.ClientInfo
 import org.jellyfin.sdk.model.DeviceInfo
 import org.jellyfin.sdk.model.UUID
+import java.security.PrivateKey
+import java.security.cert.X509Certificate
 import kotlin.reflect.KClass
 
 public abstract class ApiClient {
@@ -40,6 +42,9 @@ public abstract class ApiClient {
 	 */
 	public abstract var userId: UUID?
 
+	public abstract var clientKey: PrivateKey?
+
+	public abstract var clientCertChain: Array<X509Certificate>?
 	/**
 	 * Information about the client / application send in all API requests.
 	 */
